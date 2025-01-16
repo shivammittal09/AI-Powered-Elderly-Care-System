@@ -1,0 +1,23 @@
+body {
+  font-family: "Arial", sans-serif;
+}
+
+.navbar {
+  background-color: #004085;
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+}
+
+.card {
+  margin: 20px;
+}
+
+.btn {
+  margin-top: 20px;
+}
+
+.table {
+  margin-top: 30px;
+}

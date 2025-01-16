@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fall Detection Dashboard</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'detection/css/styles.css' %}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav
+      class="navbar navbar-expand-lg navbar-dark bg-primary"
+      style="
+        background: linear-gradient(135deg, #004d80, #001f3f);
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+        border-bottom: 2px solid #00d1ff;
+        padding: 10px 20px;
+      "
+    >
+      <a
+        class="navbar-brand mx-auto"
+        href="#"
+        style="
+          font-size: 1.8rem;
+          font-weight: bold;
+          color: #00d1ff;
+          text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.8);
+        "
+      >
+        AI-Powered Elderly Care System
+      </a>
+    </nav>
+
+    <!-- Container -->
+    <div
+      class="container mt-4"
+      style="
+        background-color: #1a1a27;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.4);
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        background-image: linear-gradient(135deg, #f59496, #9f7a70);
+      "
+    >
+      <!-- Left Side: Video Feed -->
+      <div
+        id="videoFeedContainer"
+        style="
+          flex: 1;
+          min-width: 48%;
+          background: linear-gradient(135deg, #2a2d3e, #1c1f2b);
+          border-radius: 15px;
+          padding: 20px;
+          box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.5);
+        "
+      >
+        <h1
+          class="text-center"
+          style="
+            color: #00d1ff;
+            text-shadow: 0px 2px 6px rgba(0, 0, 0, 0.6);
+            font-family: 'Arial', sans-serif;
+          "
+        >
+          Real-Time Video Feed
+        </h1>
+        <div
+          class="card"
+          style="
+            background: #1f2231;
+            border: none;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.4);
+          "
+        >
+          <div
+            class="card-body text-center"
+            style="padding: 15px; background-color: #26293a"
+          >
+            <img
+              src="/detection/video_feed/"
+              id="videoFeed"
+              class="img-fluid"
+              alt="Video Feed"
+              style="
+                border: 2px solid #00aaff;
+                border-radius: 10px;
+                box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+              "
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Side: Fall Detection Dashboard -->
+      <div
+        id="fallDetectionContainer"
+        style="
+          flex: 1;
+          min-width: 48%;
+          background: linear-gradient(135deg, #272a3b, #1d1f29);
+          border-radius: 15px;
+          padding: 20px;
+          box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.5);
+          color: #e4e7f3;
+        "
+      >
+        <h1
+          class="text-center mb-4"
+          style="
+            color: #00d1ff;
+            text-shadow: 0px 2px 6px rgba(0, 0, 0, 0.6);
+            font-family: 'Arial', sans-serif;
+          "
+        >
+          Fall Detection Dashboard
+        </h1>
+
+        <!-- System Status -->
+        <div
+          id="status"
+          class="text-center mb-4"
+          style="
+            background: #2e2e42;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.4);
+            color: #fff;
+          "
+        >
+          <h2
+            style="
+              font-size: 1.5rem;
+              color: #a3f3ef;
+              font-family: 'Arial', sans-serif;
+              font-weight: bold;
+            "
+          >
+            System Status
+            <br />
+            <br />
+            <span
+              id="systemStatus"
+              class="badge"
+              style="
+                font-size: 1.5rem; /* Increased font size */
+                padding: 10px 20px; /* Increased padding for larger length */
+                border-radius: 5px;
+                background-color: #6c757d; /* Inactive color */
+                width: auto; /* Adjust width to fit content */
+                display: inline-block; /* Ensures the width adjusts dynamically */
+                text-align: center; /* Centers the text */
+              "
+            >
+              Inactive
+            </span>
+          </h2>
+        </div>
+
+<!-- Buttons Section -->
+<div
+  class="d-flex justify-content-between align-items-center mb-4"
+  style="gap: 30px;"
+>
+  <!-- Left Side: Monitoring Buttons in Container -->
+  <div
+    style="
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 48%;
+      background-color: white; /* Light blue background */
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    "
+  >
+    <button
+      id="startDetectionButton"
+      class="btn"
+      style="
+        background: linear-gradient(135deg, #00c853, #006400);
+        border: 2px solid #00ff88;
+        color: white;
+        font-size: 1.3rem;
+        font-weight: bold;
+        padding: 15px 20px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 255, 136, 0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      "
+      onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 12px 24px rgba(0, 255, 136, 0.5)';"
+      onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 20px rgba(0, 255, 136, 0.3)';"
+    >
+      Start Monitoring
+    </button>
+
+    <button
+      id="stopDetectionButton"
+      class="btn"
+      style="
+        background: linear-gradient(135deg, #ff3b3b, #8b0000);
+        border: 2px solid #ff6666;
+        color: white;
+        font-size: 1.3rem;
+        font-weight: bold;
+        padding: 15px 20px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(255, 102, 102, 0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      "
+      onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 12px 24px rgba(255, 102, 102, 0.5)';"
+      onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 20px rgba(255, 102, 102, 0.3)';"
+    >
+      Stop Monitoring
+    </button>
+  </div>
+
+  <!-- Right Side: File Upload Section in Container -->
+  <div
+    style="
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 48%;
+      background-color: white; /* Light blue background */
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    "
+  >
+    <label
+      id="fileLabel"
+      for="videoFile"
+      class="custom-file-upload"
+      style="
+        display: inline-block;
+        background: linear-gradient(135deg, #1e90ff, #004aad);
+        border: 2px solid #33ccff;
+        color: white;
+        font-size: 1.2rem;
+        font-weight: bold;
+        padding: 15px 20px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(51, 204, 255, 0.3);
+        cursor: pointer;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      "
+      onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 12px 24px rgba(51, 204, 255, 0.5)';"
+      onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 20px rgba(51, 204, 255, 0.3)';"
+    >
+      Choose File
+    </label>
+    <input
+      type="file"
+      id="videoFile"
+      style="display: none;"
+      onchange="updateFileName(this)"
+    />
+    <button
+  id="uploadVideoButton"
+  class="btn"
+  style="
+    background: linear-gradient(135deg, #ffc107, #ff8800);
+    border: 2px solid #ffcc33;
+    color: white;
+    font-size: 1.3rem;
+    font-weight: bold;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(255, 204, 51, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  "
+  onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 12px 24px rgba(255, 204, 51, 0.5)';"
+  onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 20px rgba(255, 204, 51, 0.3)';"
+  onclick="uploadAndRedirect()"
+>
+  Upload Video for Detection
+</button>
+
+<script>
+  document.getElementById("uploadVideoButton").addEventListener("click", function () {
+    const videoFile = document.getElementById("videoFile").files[0];
+    if (videoFile) {
+      const formData = new FormData();
+      formData.append("video_file", videoFile);
+
+      // Send the video file to the upload endpoint
+      fetch("/detection/upload-video/", {
+        method: "POST",
+        headers: { "X-CSRFToken": csrfToken },
+        body: formData,
+      })
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error("Failed to upload video. Please try again.");
+          }
+        })
+        .then((data) => {
+          if (data.status === "success") {
+            alert("Video uploaded successfully! Detection started.");
+            
+            // Now start the detection on the uploaded video
+            fetch(`/detection/start-detection/?video_url=${data.file_url}`, {
+              method: "GET", // Or POST if your detection API requires POST
+              headers: { "X-CSRFToken": csrfToken }
+            })
+              .then((response) => response.json())
+              .catch((error) => console.error("Detection Error:", error));
+          } else {
+            alert("Error uploading video.");
+          }
+        })
+        .catch((error) => console.error("Error:", error));
+    } else {
+      alert("Please select a video file.");
+    }
+  });
+</script>
+
+
+
+  </div>
+</div>
+
+<script>
+function updateFileName(input) {
+  const label = document.getElementById('fileLabel');
+  if (input.files && input.files.length > 0) {
+    label.textContent = input.files[0].name;
+  } else {
+    label.textContent = 'Choose File';
+  }
+}
+</script>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom JavaScript to Change Status Color -->
+    <script>
+      const statusElement = document.getElementById("systemStatus");
+      const startButton = document.getElementById("startDetectionButton");
+      const uploadButton = document.getElementById("uploadVideoButton");
+      const stopButton = document.getElementById("stopDetectionButton");
+
+      startButton.addEventListener("click", function () {
+        statusElement.innerText = "Active";
+        statusElement.style.backgroundColor = "#28a745"; // Green
+      });
+
+      uploadButton.addEventListener("click", function () {
+        statusElement.innerText = "Active";
+        statusElement.style.backgroundColor = "#28a745"; // Green
+      });
+
+      stopButton.addEventListener("click", function () {
+        statusElement.innerText = "Inactive";
+        statusElement.style.backgroundColor = "#6c757d"; // Gray
+      });
+    </script>
+
+    <!-- Main Container -->
+    <div class="container mt-4">
+      <div class="row">
+       <!-- Fall Detection Logs Section -->
+<div
+class="col-lg-6 mb-4"
+style="
+  background: linear-gradient(135deg, #2c3e50, #4ca1af); /* Attractive gradient background */
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.3);
+"
+>
+<div class="mb-4">
+  <!-- Header -->
+  <h3
+    class="text-center"
+    style="
+      color: #ffc107;
+      font-weight: bold;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+    "
+  >
+    Fall Detection Logs
+  </h3>
+  <!-- Table -->
+  <table
+    class="table table-striped"
+    style="
+      background-color: #2f3244;
+      color: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      border-collapse: separate;
+      border-spacing: 0;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+      margin-top: 10px;
+    "
+  >
+    <thead>
+      <tr
+        style="
+          background: #3b3f54;
+          color: #ffc107;
+          font-weight: bold;
+          text-align: center;
+        "
+      >
+        <th style="padding: 10px">#</th>
+        <th style="padding: 10px">Timestamp</th>
+        <th style="padding: 10px">Status</th>
+      </tr>
+    </thead>
+    <tbody id="logsTableBody">
+      {% for log in logs %}
+      <tr>
+        <td style="text-align: center">{{ forloop.counter }}</td>
+        <td style="text-align: center">{{ log.timestamp }}</td>
+        <td style="text-align: center">{{ log.status }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="3" class="text-center" style="padding: 10px">
+          No logs yet.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+</div>
+
+
+        <!-- Chatbot (Right Side) -->
+        <div class="col-lg-6">
+          <div
+            id="chatbot-container"
+            class="chatbot-widget"
+            style="
+              width: 100%;
+              background: linear-gradient(135deg, #1e1e2f, #27273d);
+              border: 1px solid #4e4e69;
+              border-radius: 15px;
+              box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.4);
+              color: #fff;
+              font-family: 'Arial', sans-serif;
+              padding: 15px;
+            "
+          >
+            <h3
+              class="text-center"
+              style="
+                margin: 0;
+                padding: 10px 0;
+                border-bottom: 1px solid #4e4e69;
+                background: #2e2e42;
+                color: #00d1ff;
+                font-size: 1.5rem;
+                border-top-left-radius: 15px;
+                border-top-right-radius: 15px;
+              "
+            >
+              Healthcare Assistant
+            </h3>
+            <div
+              id="chat-messages"
+              class="chat-messages"
+              style="
+                padding: 15px;
+                background: #1a1a27;
+                border-radius: 15px;
+                color: #d1d1e8;
+                font-size: 0.9rem;
+                margin-bottom: 15px;
+              "
+            >
+              <div
+                class="message bot-message"
+                style="
+                  background: #00d1ff;
+                  color: #1a1a27;
+                  padding: 10px;
+                  border-radius: 8px;
+                  margin-bottom: 10px;
+                  width: fit-content;
+                "
+              >
+                Hello! How can I assist you today?
+              </div>
+            </div>
+            <div
+              class="chat-input-container"
+              style="
+                padding: 10px;
+                background: #2e2e42;
+                border-radius: 0 0 15px 15px;
+              "
+            >
+              <input
+                type="text"
+                id="chat-input"
+                class="form-control"
+                placeholder="Type a message..."
+                style="
+                  width: calc(100% - 60px);
+                  padding: 10px;
+                  margin-right: 10px;
+                  border-radius: 8px;
+                  border: 1px solid #4e4e69;
+                  background: #1a1a27;
+                  color: #fff;
+                  font-size: 0.9rem;
+                "
+              />
+              <button
+                id="send-chat-button"
+                class="btn btn-primary"
+                style="
+                  width: 100%;
+                  margin-top: 10px;
+                  padding: 10px;
+                  background: linear-gradient(135deg, #00b3ff, #0073e6);
+                  border: none;
+                  color: white;
+                  border-radius: 8px;
+                  font-size: 1rem;
+                  cursor: pointer;
+                  transition: 0.3s ease-in-out;
+                "
+                onmouseover="this.style.background='linear-gradient(135deg, #0073e6, #00b3ff)'"
+                onmouseout="this.style.background='linear-gradient(135deg, #00b3ff, #0073e6)'"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="text-center mt-5 text-muted">
+      <b><p>&copy; 2024 Elderly Care System</p></b>
+    </footer>
+
+    <script>
+      const csrfToken = "{{ csrf_token }}";
+
+      // Start Detection
+      document
+        .getElementById("startDetectionButton")
+        .addEventListener("click", function () {
+          fetch("/detection/start-detection/", {
+            method: "POST",
+            headers: { "X-CSRFToken": csrfToken },
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              document.getElementById("systemStatus").innerText = "Active";
+              document
+                .getElementById("systemStatus")
+                .classList.replace("bg-secondary", "bg-success");
+              alert(data.status);
+            })
+            .catch((error) => console.error("Error:", error));
+        });
+
+      // Stop Detection
+      document
+        .getElementById("stopDetectionButton")
+        .addEventListener("click", function () {
+          fetch("/detection/stop-detection/", {
+            method: "POST",
+            headers: { "X-CSRFToken": csrfToken },
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              document.getElementById("systemStatus").innerText = "Inactive";
+              document
+                .getElementById("systemStatus")
+                .classList.replace("bg-success", "bg-secondary");
+              alert(data.status);
+            })
+            .catch((error) => console.error("Error:", error));
+        });
+
+      // Fetch Logs
+      function fetchLogs() {
+        fetch("/detection/fetch-logs/")
+          .then((response) => response.json())
+          .then((data) => {
+            const logsTableBody = document.getElementById("logsTableBody");
+            logsTableBody.innerHTML = ""; // Clear previous logs
+
+            if (data.logs.length === 0) {
+              logsTableBody.innerHTML =
+                "<tr><td colspan='3' class='text-center'>No logs yet.</td></tr>";
+            } else {
+              data.logs.forEach((log, index) => {
+                // Parse the timestamp from ISO 8601 format to a Date object
+                const date = new Date(log.timestamp);
+
+                // Format the date to a readable string (e.g., "November 21, 2024, 12:36 AM")
+                const formattedDate = date.toLocaleString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "2-digit",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                  hour12: true, // Use 12-hour clock format with AM/PM
+                });
+
+                // Create a row with the formatted date
+                const row = `<tr>
+      <td>${index + 1}</td>
+      <td>${formattedDate}</td>
+      <td>${log.status}</td>
+    </tr>`;
+                logsTableBody.insertAdjacentHTML("beforeend", row);
+              });
+            }
+          })
+          .catch((error) => console.error("Error fetching logs:", error));
+      }
+
+      setInterval(fetchLogs, 5000);
+
+      //chatbot
+      const chatMessagesContainer = document.getElementById("chat-messages");
+      const chatInput = document.getElementById("chat-input");
+      const sendChatButton = document.getElementById("send-chat-button");
+
+      async function handleChatMessage() {
+        const userMessage = chatInput.value.trim();
+        if (!userMessage) return;
+
+        // Display user message
+        const userMessageElement = document.createElement("div");
+        userMessageElement.className = "message user-message";
+        userMessageElement.textContent = userMessage;
+        chatMessagesContainer.appendChild(userMessageElement);
+        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+
+        chatInput.value = "";
+
+        // Send user message to backend and get bot response
+        try {
+          const response = await fetch("/detection/chat/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": "{{ csrf_token }}",
+            },
+            body: JSON.stringify({ message: userMessage }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            const botResponse = data.response;
+
+            // Display bot response
+            const botMessageElement = document.createElement("div");
+            botMessageElement.className = "message bot-message";
+            botMessageElement.textContent = botResponse;
+            chatMessagesContainer.appendChild(botMessageElement);
+            chatMessagesContainer.scrollTop =
+              chatMessagesContainer.scrollHeight;
+          } else {
+            throw new Error("Failed to get response from chatbot.");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          const botMessageElement = document.createElement("div");
+          botMessageElement.className = "message bot-message";
+          botMessageElement.textContent = "Sorry, something went wrong.";
+          chatMessagesContainer.appendChild(botMessageElement);
+          chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+        }
+      }
+
+      // Event listeners for chat input and send button
+      sendChatButton.addEventListener("click", handleChatMessage);
+      chatInput.addEventListener("keypress", function (e) {
+        if (e.key === "Enter") handleChatMessage();
+      });
+    </script>
+  </body>
+</html>
