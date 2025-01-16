@@ -15,7 +15,7 @@ from django.conf import settings
 import google.generativeai as ai
 
 # Configure the API
-API_KEY = 'AIzaSyAglKVc9SZ825dR_arodHWxiJ-RWBWVDUE'
+API_KEY = 'Your_API_Key'
 ai.configure(api_key=API_KEY)
 model = ai.GenerativeModel("gemini-pro")
 chat = model.start_chat()
