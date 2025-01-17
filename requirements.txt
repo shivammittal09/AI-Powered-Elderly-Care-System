@@ -1,10 +1,19 @@
-gunicorn==20.1.0
-Django==4.2
+# Django-related packages
+Django>=4.0,<5.0
 djangorestframework==3.14.0
 django-cors-headers==3.14.0
-whitenoise==6.4.0
-opencv-python==4.7.0.72
-cvzone==1.5.0
-ultralytics>=8.0.0,<8.2.0  # Specify a version range that works
 django-environ==0.10.0
+whitenoise==6.4.0
+
+# Deployment tools
+gunicorn>=20.1.0
+
+# AI/ML and related libraries
+ultralytics>=8.0.0,<8.2.0
+cvzone==1.5.0
+numpy<2.0
+opencv-python>=4.5.0,<4.7.0
+pybind11>=2.12
+
+# Google Generative AI
 google-generativeai==0.2.0
