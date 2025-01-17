@@ -17,8 +17,13 @@ import google.generativeai as ai
 # Configure the API
 API_KEY = os.environ.get('GOOGLE_API_KEY') or 'Your_API_Key'
 ai.configure(api_key=API_KEY)
-model = ai.GenerativeModel("gemini-pro")
-chat = model.start_chat()
+
+# Initialize the client
+client = ai.Client()
+chat = client.models.chat(model="gemini-1.5-flash")
+
+#model = ai.GenerativeModel("gemini-pro")
+#chat = model.start_chat()
 
 def chatbot_view(request):
     if request.method == "POST":
