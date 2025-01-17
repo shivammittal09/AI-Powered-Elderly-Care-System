@@ -48,9 +48,9 @@ def start_fall_detection(system_status, video_path=None):
         return
 
     # Email configuration
-    EMAIL_ADDRESS = "Your_email"
-    EMAIL_PASSWORD = "Your_email_password"  # Replace with environment variables for security
-    RECEIVER_EMAIL = "Caretaker's_email"
+    EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
+    EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")  # Replace with environment variables for security
+    RECEIVER_EMAIL = os.getenv("RECEIVER_EMAIL")
 
     # Create the snapshots folder in the MEDIA_ROOT
     snapshots_folder = os.path.join(settings.MEDIA_ROOT, 'snapshots')
