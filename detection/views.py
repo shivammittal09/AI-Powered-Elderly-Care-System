@@ -10,8 +10,6 @@ from django.core.files.storage import FileSystemStorage
 import os
 from django.utils import timezone
 from django.conf import settings
-
-
 import google.generativeai as ai
 
 # Configure the API
@@ -19,9 +17,6 @@ API_KEY = os.environ.get('GOOGLE_API_KEY') or 'Your_API_Key'
 ai.configure(api_key=API_KEY)
 
 # Initialize the client
-# client = ai.Client()
-# chat = client.models.chat(model="gemini-1.5-flash")
-
 model = ai.GenerativeModel("gemini-pro")
 chat = model.start_chat()
 
@@ -39,16 +34,12 @@ def chatbot_view(request):
         return JsonResponse({"response": response.text})
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
-
 # Define a shared system status dictionary
 system_status = {"active": False}
 
 def dashboard(request):
     logs = FallLog.objects.all().order_by('-timestamp')  # Fetch the fall logs
     return render(request, "detection/dashboard.html", {"status": system_status["active"], "logs": logs})
-
-# Make sure 'system_status' is defined somewhere globally or imported properly
-system_status = {"active": False}
 
 def start_detection(request):
     if request.method == "POST":
@@ -72,9 +63,9 @@ def start_detection(request):
             threading.Thread(target=start_fall_detection, args=(system_status, full_video_path)).start()
             return JsonResponse({"status": "Fall detection started successfully with uploaded video"})
         else:
-            # Start real-time fall detection
+            # Start real-time fall detection using fallback video or streaming source for Render deployment
             system_status["active"] = True
-            threading.Thread(target=start_fall_detection, args=(system_status,0)).start()
+            threading.Thread(target=start_fall_detection, args=(system_status, 0)).start()
             return JsonResponse({"status": "Fall detection started successfully for real-time processing"})
 
     elif request.method == "GET":
@@ -84,7 +75,7 @@ def start_detection(request):
 
         # Ensure the video_url is a relative path without leading /
         video_path = video_url.lstrip('/')
-        
+
         # If the path already starts with 'media/', remove it to avoid duplication
         if video_path.startswith('media/'):
             video_path = video_path[len('media/'):]
@@ -104,7 +95,6 @@ def start_detection(request):
 
     else:
         return HttpResponseBadRequest("Invalid request method")
-    
 
 @csrf_exempt  # Use with caution; implement proper CSRF protection in production
 def upload_video(request):
@@ -123,7 +113,14 @@ def upload_video(request):
     return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
 
 def video_feed(request):
-    cap = cv2.VideoCapture(0)
+    # Check if the environment is Render, if so, use a fallback video or stream source
+    if 'RENDER' in os.environ:
+        # Use a fallback video URL or stream from a camera feed
+        video_url = "https://github.com/shivammittal09/AI-Powered-Elderly-Care-System/blob/ef8cf07e32ac70c263e7cd8c0094b819d1811c03/fall.mp4"  # Replace with actual fallback URL
+        cap = cv2.VideoCapture(video_url)  # Open the fallback video file or stream
+    else:
+        # Local environment: use the camera (index 0)
+        cap = cv2.VideoCapture(0)
 
     def generate():
         while True:
