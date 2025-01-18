@@ -19,9 +19,14 @@ from django.urls import include,path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.shortcuts import redirect
+from django.http import JsonResponse
 
-urlpatterns = [
-    path('', lambda request: redirect('detection/dashboard', permanent=True)),
+def health_check(request):
+    return JsonResponse({"status": "ok"})
+
+urlpatterns = [    
+    path('', lambda request: redirect('detection/dashboard', permanent=False)),
+    path('health/', health_check, name='health_check'),
     path('admin/', admin.site.urls),
     path('detection/', include('detection.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
