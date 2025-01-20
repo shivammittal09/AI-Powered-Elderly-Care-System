@@ -39,7 +39,7 @@ def start_fall_detection(system_status, video_path=None):
 
     # Load class names
     classnames = []
-    file_path = r'C:\Users\shiva\Downloads\Fall-Detection-main\Fall-Detection-main\classes.txt'
+    file_path = os.path.join(settings.BASE_DIR, 'classes.txt')
     if os.path.exists(file_path):
         with open(file_path, 'r') as f:
             classnames = f.read().splitlines()
