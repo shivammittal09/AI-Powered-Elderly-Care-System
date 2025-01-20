@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render 
 from django.http import JsonResponse, StreamingHttpResponse, HttpResponseBadRequest
 import threading
 from .fall_detection import start_fall_detection
@@ -46,55 +46,48 @@ def start_detection(request):
         # Check if a video file is uploaded
         if 'video_file' in request.FILES:
             video_file = request.FILES['video_file']
-            # Save the video file in the 'videos' directory under MEDIA_ROOT
-            video_path = default_storage.save(f'videos/{video_file.name}', video_file)
+            fs = FileSystemStorage(location='media/videos/')
+            filename = fs.save(video_file.name, video_file)
+            video_path = fs.url(filename)
+            full_video_path = os.path.join(settings.MEDIA_ROOT, 'videos', filename)
 
-            # Construct the full path correctly without duplicating /media/
-            full_video_path = os.path.join(settings.MEDIA_ROOT, video_path)
-
-            # Check if the file was saved correctly
             if not os.path.exists(full_video_path):
                 return HttpResponseBadRequest(f"Error: File does not exist at {full_video_path}")
 
-            # Update system status to active
             system_status["active"] = True
-
-            # Start fall detection in a separate thread with the uploaded video
             threading.Thread(target=start_fall_detection, args=(system_status, full_video_path)).start()
             return JsonResponse({"status": "Fall detection started successfully with uploaded video"})
+
         else:
-            # Start real-time fall detection using fallback video or streaming source for Render deployment
+            # Fallback video for Render deployment or default video for local
+            video_url = "https://github.com/shivammittal09/AI-Powered-Elderly-Care-System/raw/main/fall.mp4"  # Use raw URL for GitHub
+            full_video_path = os.path.join(settings.MEDIA_ROOT, "videos", video_url.split("/")[-1])
+
             system_status["active"] = True
-            threading.Thread(target=start_fall_detection, args=(system_status, 0)).start()
+            threading.Thread(target=start_fall_detection, args=(system_status, full_video_path)).start()
             return JsonResponse({"status": "Fall detection started successfully for real-time processing"})
 
-    elif request.method == "GET":
-        video_url = request.GET.get('video_url')
-        if not video_url:
-            return HttpResponseBadRequest("Missing video_url parameter")
+    return HttpResponseBadRequest("Invalid request method")
 
-        # Ensure the video_url is a relative path without leading /
-        video_path = video_url.lstrip('/')
-
-        # If the path already starts with 'media/', remove it to avoid duplication
-        if video_path.startswith('media/'):
-            video_path = video_path[len('media/'):]
-
-        # Construct the full path
-        full_video_path = os.path.join(settings.MEDIA_ROOT,'videos', video_path)
-
-        if not os.path.exists(full_video_path):
-            return HttpResponseBadRequest(f"Error: File does not exist at {full_video_path}")
-
-        # Update system status to active
-        system_status["active"] = True
-
-        # Start the fall detection process with the video path
-        threading.Thread(target=start_fall_detection, args=(system_status, full_video_path)).start()
-        return JsonResponse({"status": "Fall detection started successfully with video URL"})
-
+def video_feed(request):
+    # Check if the environment is Render, if so, use a fallback video or stream source
+    if 'RENDER' in os.environ:
+        # Use a fallback video URL or stream from a camera feed
+        video_url = "https://github.com/shivammittal09/AI-Powered-Elderly-Care-System/raw/main/fall.mp4"  # Replace with actual fallback URL
+        cap = cv2.VideoCapture(video_url)  # Open the fallback video file or stream
     else:
-        return HttpResponseBadRequest("Invalid request method")
+        # Local environment: use the camera (index 0)
+        cap = cv2.VideoCapture(0)
+
+    def generate():
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+            _, jpeg = cv2.imencode(".jpg", frame)
+            yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + jpeg.tobytes() + b"\r\n")
+
+    return StreamingHttpResponse(generate(), content_type="multipart/x-mixed-replace; boundary=frame")
 
 @csrf_exempt  # Use with caution; implement proper CSRF protection in production
 def upload_video(request):
@@ -111,26 +104,6 @@ def upload_video(request):
         return JsonResponse({"status": "success", "file_url": file_url}, status=201)
 
     return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
-
-def video_feed(request):
-    # Check if the environment is Render, if so, use a fallback video or stream source
-    if 'RENDER' in os.environ:
-        # Use a fallback video URL or stream from a camera feed
-        video_url = "https://github.com/shivammittal09/AI-Powered-Elderly-Care-System/blob/ef8cf07e32ac70c263e7cd8c0094b819d1811c03/fall.mp4"  # Replace with actual fallback URL
-        cap = cv2.VideoCapture(video_url)  # Open the fallback video file or stream
-    else:
-        # Local environment: use the camera (index 0)
-        cap = cv2.VideoCapture(0)
-
-    def generate():
-        while True:
-            ret, frame = cap.read()
-            if not ret:
-                break
-            _, jpeg = cv2.imencode(".jpg", frame)
-            yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + jpeg.tobytes() + b"\r\n")
-
-    return StreamingHttpResponse(generate(), content_type="multipart/x-mixed-replace; boundary=frame")
 
 def fetch_logs(request):
     logs = FallLog.objects.all().order_by('-timestamp')  # Fetch logs ordered by timestamp
