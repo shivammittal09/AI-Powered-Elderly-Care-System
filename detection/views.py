@@ -42,7 +42,7 @@ def dashboard(request):
     return render(request, "detection/dashboard.html", {"status": system_status["active"], "logs": logs})
 
 def start_detection(request):
-    if request.method == "POST":
+    if request.method == "GET":
         # Check if a video file is uploaded
         if 'video_file' in request.FILES:
             video_file = request.FILES['video_file']
