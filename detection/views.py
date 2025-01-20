@@ -60,7 +60,7 @@ def start_detection(request):
 
         else:
             # Fallback video for Render deployment or default video for local
-            video_url = "https://github.com/shivammittal09/AI-Powered-Elderly-Care-System/raw/main/fall.mp4"  # Use raw URL for GitHub
+            video_url = "https://github.com/shivammittal09/AI-Powered-Elderly-Care-System/blob/63f0978a33d1b95f9716ed6731634b35d9c65b20/media/videos/Man%20slipped.mp4"  # Use raw URL for GitHub
             full_video_path = os.path.join(settings.MEDIA_ROOT, "videos", video_url.split("/")[-1])
 
             system_status["active"] = True
@@ -73,7 +73,7 @@ def video_feed(request):
     # Check if the environment is Render, if so, use a fallback video or stream source
     if 'RENDER' in os.environ:
         # Use a fallback video URL or stream from a camera feed
-        video_url = "https://github.com/shivammittal09/AI-Powered-Elderly-Care-System/raw/main/fall.mp4"  # Replace with actual fallback URL
+        video_url = "https://github.com/shivammittal09/AI-Powered-Elderly-Care-System/blob/63f0978a33d1b95f9716ed6731634b35d9c65b20/media/videos/Man%20slipped.mp4"  # Replace with actual fallback URL
         cap = cv2.VideoCapture(video_url)  # Open the fallback video file or stream
     else:
         # Local environment: use the camera (index 0)
