@@ -77,7 +77,7 @@ def video_feed(request):
     # Check if the environment is Render, if so, use a fallback video or stream source
     if 'RENDER' in os.environ:
         # Fallback video for Render
-        fallback_video_name = "Man slipped.mp4"
+        fallback_video_name = "fall.mp4"
         fallback_video_path = os.path.join(settings.MEDIA_ROOT, "videos", fallback_video_name)
 
         if not os.path.exists(fallback_video_path):
