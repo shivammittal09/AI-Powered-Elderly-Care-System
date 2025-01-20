@@ -60,21 +60,30 @@ def start_detection(request):
 
         else:
             # Fallback video for Render deployment or default video for local
-            video_url = "https://github.com/shivammittal09/AI-Powered-Elderly-Care-System/blob/63f0978a33d1b95f9716ed6731634b35d9c65b20/media/videos/Man%20slipped.mp4"  # Use raw URL for GitHub
-            full_video_path = os.path.join(settings.MEDIA_ROOT, "videos", video_url.split("/")[-1])
+            fallback_video_name = "Man slipped.mp4"
+            fallback_video_path = os.path.join(settings.MEDIA_ROOT, "videos", fallback_video_name)
+
+            if not os.path.exists(fallback_video_path):
+                return HttpResponseBadRequest(f"Error: Fallback video does not exist at {fallback_video_path}")
 
             system_status["active"] = True
-            threading.Thread(target=start_fall_detection, args=(system_status, full_video_path)).start()
-            return JsonResponse({"status": "Fall detection started successfully for real-time processing"})
+            threading.Thread(target=start_fall_detection, args=(system_status, fallback_video_path)).start()
+            return JsonResponse({"status": "Fall detection started successfully with fallback video"})
 
     return HttpResponseBadRequest("Invalid request method")
+
 
 def video_feed(request):
     # Check if the environment is Render, if so, use a fallback video or stream source
     if 'RENDER' in os.environ:
-        # Use a fallback video URL or stream from a camera feed
-        video_url = "https://github.com/shivammittal09/AI-Powered-Elderly-Care-System/blob/63f0978a33d1b95f9716ed6731634b35d9c65b20/media/videos/Man%20slipped.mp4"  # Replace with actual fallback URL
-        cap = cv2.VideoCapture(video_url)  # Open the fallback video file or stream
+        # Fallback video for Render
+        fallback_video_name = "Man slipped.mp4"
+        fallback_video_path = os.path.join(settings.MEDIA_ROOT, "videos", fallback_video_name)
+
+        if not os.path.exists(fallback_video_path):
+            return HttpResponseBadRequest(f"Error: Fallback video does not exist at {fallback_video_path}")
+
+        cap = cv2.VideoCapture(fallback_video_path)  # Open the fallback video file
     else:
         # Local environment: use the camera (index 0)
         cap = cv2.VideoCapture(0)
@@ -88,6 +97,7 @@ def video_feed(request):
             yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + jpeg.tobytes() + b"\r\n")
 
     return StreamingHttpResponse(generate(), content_type="multipart/x-mixed-replace; boundary=frame")
+
 
 @csrf_exempt  # Use with caution; implement proper CSRF protection in production
 def upload_video(request):
