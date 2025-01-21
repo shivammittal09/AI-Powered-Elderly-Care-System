@@ -86,6 +86,10 @@ def start_detection(request):
 
         full_video_path = os.path.join(settings.MEDIA_ROOT, decoded_video_url.lstrip('/'))
 
+        # Debug logs
+        print(f"Decoded video URL: {decoded_video_url}")
+        print(f"Full video path: {full_video_path}")
+
         if not os.path.exists(full_video_path):
             return HttpResponseBadRequest(f"Error: File does not exist at {full_video_path}")
 
@@ -93,6 +97,9 @@ def start_detection(request):
         system_status["active"] = True
         threading.Thread(target=start_fall_detection, args=(system_status, full_video_path)).start()
         return JsonResponse({"status": f"Fall detection started successfully with video URL: {decoded_video_url}"})
+
+    else:
+        pass
 
     return HttpResponseBadRequest("Invalid request method")
 
