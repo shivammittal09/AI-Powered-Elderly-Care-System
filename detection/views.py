@@ -43,7 +43,7 @@ def dashboard(request):
 
 def start_detection(request):
     if request.method == "POST":
-        # Check if a video file is uploaded
+        # Handle video file upload
         if 'video_file' in request.FILES:
             video_file = request.FILES['video_file']
             fs = FileSystemStorage(location='media/videos/')
@@ -54,21 +54,31 @@ def start_detection(request):
             if not os.path.exists(full_video_path):
                 return HttpResponseBadRequest(f"Error: File does not exist at {full_video_path}")
 
+            # Start fall detection with uploaded video
             system_status["active"] = True
             threading.Thread(target=start_fall_detection, args=(system_status, full_video_path)).start()
             return JsonResponse({"status": "Fall detection started successfully with uploaded video"})
 
         else:
-            # Fallback video for Render deployment or default video for local
-            fallback_video_name = "Man slipped.mp4"
-            fallback_video_path = os.path.join(settings.MEDIA_ROOT, "videos", fallback_video_name)
+            return HttpResponseBadRequest("No video file provided in the request")
 
-            if not os.path.exists(fallback_video_path):
-                return HttpResponseBadRequest(f"Error: Fallback video does not exist at {fallback_video_path}")
+    elif request.method == "GET":
+        # Handle video URL provided as a query parameter
+        video_url = request.GET.get('video_url', None)
 
+        if video_url:
+            full_video_path = os.path.join(settings.MEDIA_ROOT, video_url.lstrip('/'))
+
+            if not os.path.exists(full_video_path):
+                return HttpResponseBadRequest(f"Error: File does not exist at {full_video_path}")
+
+            # Start fall detection with video URL
             system_status["active"] = True
-            threading.Thread(target=start_fall_detection, args=(system_status, fallback_video_path)).start()
-            return JsonResponse({"status": "Fall detection started successfully with fallback video"})
+            threading.Thread(target=start_fall_detection, args=(system_status, full_video_path)).start()
+            return JsonResponse({"status": f"Fall detection started successfully with video URL: {video_url}"})
+        
+        else:
+            return HttpResponseBadRequest("No video URL provided in the request")
 
     return HttpResponseBadRequest("Invalid request method")
 
