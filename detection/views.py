@@ -11,6 +11,7 @@ import os
 from django.utils import timezone
 from django.conf import settings
 import google.generativeai as ai
+from urllib.parse import unquote
 
 # Configure the API
 API_KEY = os.environ.get('GOOGLE_API_KEY')
@@ -41,6 +42,13 @@ def dashboard(request):
     logs = FallLog.objects.all().order_by('-timestamp')  # Fetch the fall logs
     return render(request, "detection/dashboard.html", {"status": system_status["active"], "logs": logs})
 
+from urllib.parse import unquote
+from django.core.files.storage import FileSystemStorage
+from django.http import JsonResponse, HttpResponseBadRequest
+import os
+import threading
+from django.conf import settings
+
 def start_detection(request):
     if request.method == "POST":
         # Handle video file upload
@@ -66,22 +74,27 @@ def start_detection(request):
         # Handle video URL provided as a query parameter
         video_url = request.GET.get('video_url', None)
 
-        if video_url:
-            full_video_path = os.path.join(settings.MEDIA_ROOT, video_url.lstrip('/'))
-
-            if not os.path.exists(full_video_path):
-                return HttpResponseBadRequest(f"Error: File does not exist at {full_video_path}")
-
-            # Start fall detection with video URL
-            system_status["active"] = True
-            threading.Thread(target=start_fall_detection, args=(system_status, full_video_path)).start()
-            return JsonResponse({"status": f"Fall detection started successfully with video URL: {video_url}"})
-        
-        else:
+        if not video_url:
             return HttpResponseBadRequest("No video URL provided in the request")
 
-    return HttpResponseBadRequest("Invalid request method")
+        # Decode the video URL
+        decoded_video_url = unquote(video_url)
 
+        # Validate decoded URL
+        if not decoded_video_url.startswith('/media/'):
+            return HttpResponseBadRequest("Invalid video URL provided")
+
+        full_video_path = os.path.join(settings.MEDIA_ROOT, decoded_video_url.lstrip('/'))
+
+        if not os.path.exists(full_video_path):
+            return HttpResponseBadRequest(f"Error: File does not exist at {full_video_path}")
+
+        # Start fall detection with video URL
+        system_status["active"] = True
+        threading.Thread(target=start_fall_detection, args=(system_status, full_video_path)).start()
+        return JsonResponse({"status": f"Fall detection started successfully with video URL: {decoded_video_url}"})
+
+    return HttpResponseBadRequest("Invalid request method")
 
 def video_feed(request):
     # Check if the environment is Render, if so, use a fallback video or stream source
