@@ -313,8 +313,7 @@
             alert("Video uploaded successfully! Detection started.");
             
             // Now start the detection on the uploaded video
-            const encodedUrl = encodeURIComponent(data.file_url);
-            fetch(`/detection/start-detection/?video_url=${encodedUrl}`, {
+            fetch(`/detection/start-detection/?video_url=${data.file_url}`, {
               method: "GET", // Or POST if your detection API requires POST
               headers: { "X-CSRFToken": csrfToken }
             })
